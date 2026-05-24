@@ -21,7 +21,7 @@ body {
 	touch-action: none;
 }
 
-/* 2. HACEMOS TRANSPARENTE EL CANVAS DE GODOT Y LO TRAEMOS AL FRENTE */
+/* 2. TRANSPARENCIA Y CAPA SUPERIOR PARA LOS BOTONES DE GODOT */
 #canvas {
 	display: block;
 	position: absolute;
@@ -116,7 +116,8 @@ body {
 				document.getElementById("flash-container").appendChild(player);
 				player.load({
 					url: "redball3.swf",
-					allowScriptAccess: true
+					allowScriptAccess: true,
+					publicPath: ""
 				});
 			});
 		</script>
