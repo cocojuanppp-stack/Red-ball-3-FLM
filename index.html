@@ -8,20 +8,29 @@
 		<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 
 		<style>
-			html, body, #canvas {
+			html, body {
 				margin: 0;
 				padding: 0;
 				border: 0;
-			}
-
-			body {
-				color: white;
+				width: 100%;
+				height: 100%;
 				background-color: black;
 				overflow: hidden;
 				touch-action: none;
 			}
 
-			/* Hacemos que el canvas ignore los toques directos para no bloquear a Ruffle */
+			/* CAPA 1: El contenedor de Ruffle DEBE recibir todos los clics obligatoriamente */
+			#flash-container {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				z-index: 1;
+				pointer-events: auto !important;
+			}
+
+			/* CAPA 2: El canvas de Godot se vuelve completamente invisible e intangible para los dedos */
 			#canvas {
 				display: block;
 				position: absolute;
@@ -31,38 +40,44 @@
 				height: 100%;
 				z-index: 2;
 				background: transparent !important;
-				pointer-events: none; 
+				pointer-events: none !important; 
 			}
 
 			#canvas:focus {
 				outline: none;
 			}
 
+			/* CAPA 3: El estado de carga de Godot */
 			#status, #status-splash, #status-progress {
 				position: absolute;
 				left: 0;
 				right: 0;
 			}
 
-			#status, #status-splash {
+			#status {
 				top: 0;
 				bottom: 0;
-			}
-
-			#status {
 				background-color: #242424;
 				display: flex;
 				flex-direction: column;
 				justify-content: center;
 				align-items: center;
 				visibility: hidden;
+				z-index: 3;
+				pointer-events: none !important; /* Evita que la pantalla de carga bloquee tras ocultarse */
+			}
+
+			#status-splash {
+				max-height: 100%;
+				max-width: 100%;
+				margin: auto;
 			}
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="Redball3fl.icon.png" />
 	</head>
 	<body>
 		
-		<div id="flash-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></div>
+		<div id="flash-container"></div>
 
 		<script>
 			window.RufflePlayer = window.RufflePlayer || {};
@@ -84,7 +99,7 @@
 		</canvas>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="Redball3fl.png" alt="">
+			<img id="status-splash" src="Redball3fl.png" alt="">
 			<progress id="status-progress"></progress>
 		</div>
 
