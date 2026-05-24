@@ -21,7 +21,7 @@
 				touch-action: none;
 			}
 
-			/* Canvas transparente de Godot al frente para tus botones táctiles */
+			/* Hacemos que el canvas ignore los toques directos para no bloquear a Ruffle */
 			#canvas {
 				display: block;
 				position: absolute;
@@ -31,6 +31,7 @@
 				height: 100%;
 				z-index: 2;
 				background: transparent !important;
+				pointer-events: none; 
 			}
 
 			#canvas:focus {
