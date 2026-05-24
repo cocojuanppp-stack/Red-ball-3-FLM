@@ -5,6 +5,16 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
 		<title>Redball3fl</title>
 		
+		<script>
+			window.RufflePlayer = window.RufflePlayer || {};
+			window.RufflePlayer.config = {
+				"publicPath": "https://unpkg.com/@ruffle-rs/ruffle/",
+				"allowScriptAccess": true,
+				"autoplay": "on",
+				"unmuteOverlay": "hidden",
+				"letterbox": "on"
+			};
+		</script>
 		<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 
 		<style>
@@ -14,12 +24,12 @@
 				border: 0;
 				width: 100%;
 				height: 100%;
-				background-color: black;
+				background-color: #000000;
 				overflow: hidden;
 				touch-action: none;
 			}
 
-			/* Capa de fondo: El juego de Flash original */
+			/* Capa trasera: El juego Flash original */
 			#flash-container {
 				position: absolute;
 				top: 0;
@@ -29,7 +39,7 @@
 				z-index: 1;
 			}
 
-			/* Capa de frente: El canvas de Godot con tus controles rojos */
+			/* Capa frontal: El canvas de Godot con tus controles táctiles rojos */
 			#canvas {
 				display: block;
 				position: absolute;
@@ -37,12 +47,12 @@
 				left: 0;
 				width: 100%;
 				height: 100%;
-				z-index: 9999 !important; /* Fuerza a dibujarse SIEMPRE por encima de Ruffle */
-				background: transparent !important; /* Mantiene el fondo invisible */
-				pointer-events: none; /* Por defecto, tus dedos atraviesan el canvas hacia Flash */
+				z-index: 9999 !important; /* Asegura que los botones floten sobre Flash */
+				background-color: transparent !important; /* Quita el fondo gris de Godot */
+				pointer-events: none; /* Deja pasar los clics al juego por defecto */
 			}
 
-			/* Cuando tocas la zona de los controles, activamos los clics en Godot */
+			/* Activa la interactividad cuando el script detecta que tocas un control */
 			#canvas.active-controls {
 				pointer-events: auto !important;
 			}
@@ -51,7 +61,7 @@
 				outline: none;
 			}
 
-			/* Pantalla de carga original de Godot */
+			/* Pantalla de carga oficial de Godot */
 			#status, #status-splash, #status-progress {
 				position: absolute;
 				left: 0;
@@ -114,27 +124,23 @@
 				overflow: hidden;
 				padding: 1rem;
 				text-align: center;
-				z-index: 1;
+				z-index: 10001;
 			}
 		</style>
-		<link id="-gd-engine-icon" rel="icon" type="image/png" href="Redball3fl.icon.png" />
-		<link rel="apple-touch-icon" href="Redball3fl.apple-touch-icon.png"/>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+		<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
 	</head>
 	<body>
 		
 		<div id="flash-container"></div>
 
 		<script>
-			window.RufflePlayer = window.RufflePlayer || {};
 			window.addEventListener("DOMContentLoaded", () => {
 				const ruffle = window.RufflePlayer.newest();
 				const player = ruffle.createPlayer();
 				document.getElementById("flash-container").appendChild(player);
 				player.load({
-					url: "redball3.swf",
-					allowScriptAccess: true,
-					autoplay: "on",
-					unmuteOverlay: "hidden"
+					url: "redball3.swf"
 				});
 			});
 		</script>
@@ -148,7 +154,7 @@
 		</noscript>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="Redball3fl.png" alt="">
+			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
 			<progress id="status-progress"></progress>
 			<div id="status-notice"></div>
 		</div>
@@ -160,8 +166,8 @@
 				const touchY = e.touches[0].clientY;
 				const screenHeight = window.innerHeight;
 				
-				// Si tocas el 40% inferior de la pantalla, responde Godot
-				if (touchY > screenHeight * 0.60) {
+				// Si tocas el tercio inferior de la pantalla (donde están tus botones), responde Godot
+				if (touchY > screenHeight * 0.65) {
 					cv.classList.add('active-controls');
 				} else {
 					cv.classList.remove('active-controls');
@@ -171,25 +177,24 @@
 			window.addEventListener('touchend', () => {
 				setTimeout(() => {
 					cv.classList.remove('active-controls');
-				}, 100);
+				}, 80);
 			});
 		</script>
 
-		<script src="Redball3fl.js"></script>
+		<script src="index.js"></script>
 		<script>
-// CLAVE: Añadimos los atributos de contexto para forzar la transparencia nativa de WebGL
 const GODOT_CONFIG = {
 	"args":[],
 	"canvasResizePolicy":2,
 	"emscriptenPoolSize":8,
 	"ensureCrossOriginIsolationHeaders":true,
-	"executable":"Redball3fl",
+	"executable":"index",
 	"experimentalVK":false,
-	"fileSizes":{"Redball3fl.pck":37516,"Redball3fl.wasm":35754592},
+	"fileSizes":{"index.pck":37564,"index.wasm":37700666},
 	"focusCanvas":true,
 	"gdextensionLibs":[],
 	"godotPoolSize":4,
-	"canvasContextAttributes": { "alpha": true, "premultipliedAlpha": false }
+	"canvasContextAttributes": { "alpha": true, "premultipliedAlpha": false } // Forzar WebGL con soporte Alpha transparente
 };
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
