@@ -1,43 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Diagnóstico RedBall</title>
-    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
-    <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: black; overflow: hidden; }
-        
-        /* Capa 1: Ruffle (Fondo) */
-        #flash-container { position: absolute; width: 100%; height: 100%; z-index: 1; }
-        
-        /* Capa 2: Godot (Frente) - CON MARCO ROJO PARA VER SI APARECE */
-        #canvas {
-            position: absolute; width: 100%; height: 100%;
-            z-index: 999;
-            border: 5px solid red !important; /* MARCO DE DIAGNÓSTICO */
-            pointer-events: none; /* Atraviesa los toques */
-        }
-    </style>
-</head>
-<body>
-    <div id="flash-container"></div>
-    <canvas id="canvas"></canvas>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<title>Redball3fl</title>
+		<style>
+            /* Reset básico */
+			html, body, #canvas { margin: 0; padding: 0; border: 0; }
+			body { color: white; background-color: black; overflow: hidden; touch-action: none; }
+			
+            /* Canvas de Godot (Botones) */
+			#canvas {
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10; /* Siempre arriba */
+                background: transparent !important;
+            }
+			#canvas:focus { outline: none; }
 
-    <script>
-        window.RufflePlayer = window.RufflePlayer || {};
-        window.addEventListener("DOMContentLoaded", () => {
-            const ruffle = window.RufflePlayer.newest();
-            const player = ruffle.createPlayer();
-            document.getElementById("flash-container").appendChild(player);
-            player.load({ url: "redball3.swf" });
-        });
-    </script>
-    
-    <script src="index.js"></script>
-    <script>
-        const engine = new Engine({ "canvasContextAttributes": { "alpha": true } });
-        engine.startGame();
-    </script>
-</body>
+            /* Contenedor de Ruffle (Juego Flash) */
+            #flash-container {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 1; /* Fondo */
+            }
+
+            /* Estilos de carga de Godot */
+			#status { position: absolute; top: 0; bottom: 0; left: 0; right: 0; background-color: #242424; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+            #status-progress { width: 50%; }
+		</style>
+	</head>
+	<body>
+        <div id="flash-container"></div>
+
+        <canvas id="canvas">
+			Your browser does not support the canvas tag.
+		</canvas>
+
+        <div id="status">
+			<progress id="status-progress"></progress>
+		</div>
+
+        <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+        <script>
+            window.addEventListener("DOMContentLoaded", () => {
+                const ruffle = window.RufflePlayer.newest();
+                const player = ruffle.createPlayer();
+                document.getElementById("flash-container").appendChild(player);
+                player.load({ url: "redball3.swf" }); // Asegúrate de que el archivo se llame así en tu repo
+            });
+        </script>
+
+        <script src="index.js"></script>
+		<script>
+            // IMPORTANTE: alpha: true permite la transparencia
+            const GODOT_CONFIG = {
+                "canvasContextAttributes": {"alpha": true},
+                "args":[],
+                "canvasResizePolicy":2,
+                "ensureCrossOriginIsolationHeaders":true,
+                "executable":"index",
+                "fileSizes":{"index.pck":37612,"index.wasm":35754592},
+                "focusCanvas":true
+            };
+            const engine = new Engine(GODOT_CONFIG);
+            engine.startGame();
+		</script>
+	</body>
 </html>
