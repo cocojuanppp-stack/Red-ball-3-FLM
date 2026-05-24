@@ -29,17 +29,17 @@
 				touch-action: none;
 			}
 
-			/* Capa trasera: El juego Flash original */
+			/* CAPA 1 (Fondo): El juego Flash original */
 			#flash-container {
 				position: absolute;
 				top: 0;
 				left: 0;
 				width: 100%;
 				height: 100%;
-				z-index: 1;
+				z-index: 1; /* Se queda atrás */
 			}
 
-			/* Capa frontal: El canvas de Godot con tus controles táctiles rojos */
+			/* CAPA 2 (Frente): Los controles táctiles de Godot */
 			#canvas {
 				display: block;
 				position: absolute;
@@ -47,14 +47,8 @@
 				left: 0;
 				width: 100%;
 				height: 100%;
-				z-index: 9999 !important; /* Asegura que los botones floten sobre Flash */
-				background-color: transparent !important; /* Quita el fondo gris de Godot */
-				pointer-events: none; /* Deja pasar los clics al juego por defecto */
-			}
-
-			/* Activa la interactividad cuando el script detecta que tocas un control */
-			#canvas.active-controls {
-				pointer-events: auto !important;
+				z-index: 10; /* Forzamos que flote ARRIBA de Ruffle */
+				background-color: transparent !important; /* Transparencia WebGL */
 			}
 
 			#canvas:focus {
@@ -80,7 +74,7 @@
 				justify-content: center;
 				align-items: center;
 				visibility: hidden;
-				z-index: 10000;
+				z-index: 100; /* Pantalla de carga por encima de todo temporalmente */
 			}
 
 			#status-splash {
@@ -124,7 +118,7 @@
 				overflow: hidden;
 				padding: 1rem;
 				text-align: center;
-				z-index: 10001;
+				z-index: 101;
 			}
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
@@ -159,28 +153,6 @@
 			<div id="status-notice"></div>
 		</div>
 
-		<script>
-			const cv = document.getElementById('canvas');
-			
-			window.addEventListener('touchstart', (e) => {
-				const touchY = e.touches[0].clientY;
-				const screenHeight = window.innerHeight;
-				
-				// Si tocas el tercio inferior de la pantalla (donde están tus botones), responde Godot
-				if (touchY > screenHeight * 0.65) {
-					cv.classList.add('active-controls');
-				} else {
-					cv.classList.remove('active-controls');
-				}
-			}, { passive: true });
-
-			window.addEventListener('touchend', () => {
-				setTimeout(() => {
-					cv.classList.remove('active-controls');
-				}, 80);
-			});
-		</script>
-
 		<script src="index.js"></script>
 		<script>
 const GODOT_CONFIG = {
@@ -194,7 +166,8 @@ const GODOT_CONFIG = {
 	"focusCanvas":true,
 	"gdextensionLibs":[],
 	"godotPoolSize":4,
-	"canvasContextAttributes": { "alpha": true, "premultipliedAlpha": false } // Forzar WebGL con soporte Alpha transparente
+	// IMPORTANTE: Le pedimos explícitamente al contexto gráfico que permita transparencia alfa
+	"canvasContextAttributes": { "alpha": true, "premultipliedAlpha": false }
 };
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
