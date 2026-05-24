@@ -19,7 +19,7 @@
 				touch-action: none;
 			}
 
-			/* CAPA 1: El contenedor de Ruffle DEBE recibir todos los clics obligatoriamente */
+			/* CAPA 1: El juego Flash de fondo siempre activo */
 			#flash-container {
 				position: absolute;
 				top: 0;
@@ -27,10 +27,10 @@
 				width: 100%;
 				height: 100%;
 				z-index: 1;
-				pointer-events: auto !important;
+				pointer-events: auto;
 			}
 
-			/* CAPA 2: El canvas de Godot se vuelve completamente invisible e intangible para los dedos */
+			/* CAPA 2: El canvas de Godot ahora deja pasar los clics al fondo por defecto... */
 			#canvas {
 				display: block;
 				position: absolute;
@@ -40,23 +40,21 @@
 				height: 100%;
 				z-index: 2;
 				background: transparent !important;
-				pointer-events: none !important; 
+				pointer-events: none; 
+			}
+
+			/* ...¡PERO se activa OBLIGATORIAMENTE cuando tocas la zona de tus botones! */
+			#canvas.active-controls {
+				pointer-events: auto !important;
 			}
 
 			#canvas:focus {
 				outline: none;
 			}
 
-			/* CAPA 3: El estado de carga de Godot */
-			#status, #status-splash, #status-progress {
-				position: absolute;
-				left: 0;
-				right: 0;
-			}
-
 			#status {
-				top: 0;
-				bottom: 0;
+				position: absolute;
+				left: 0; right: 0; top: 0; bottom: 0;
 				background-color: #242424;
 				display: flex;
 				flex-direction: column;
@@ -64,13 +62,7 @@
 				align-items: center;
 				visibility: hidden;
 				z-index: 3;
-				pointer-events: none !important; /* Evita que la pantalla de carga bloquee tras ocultarse */
-			}
-
-			#status-splash {
-				max-height: 100%;
-				max-width: 100%;
-				margin: auto;
+				pointer-events: none;
 			}
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="Redball3fl.icon.png" />
@@ -102,6 +94,31 @@
 			<img id="status-splash" src="Redball3fl.png" alt="">
 			<progress id="status-progress"></progress>
 		</div>
+
+		<script>
+			const cv = document.getElementById('canvas');
+			
+			// Detectamos si el usuario está tocando la parte inferior de la pantalla (donde suelen ir los controles de Red Ball 4)
+			window.addEventListener('touchstart', (e) => {
+				const touchY = e.touches[0].clientY;
+				const screenHeight = window.innerHeight;
+				
+				// Si toca en el 35% inferior de la pantalla, le damos el control a Godot
+				if (touchY > screenHeight * 0.65) {
+					cv.classList.add('active-controls');
+				} else {
+					// Si toca arriba (para interactuar con menús de Flash), el control va a Ruffle
+					cv.classList.remove('active-controls');
+				}
+			}, { passive: true });
+
+			window.addEventListener('touchend', () => {
+				// Al levantar el dedo, liberamos la capa para que Ruffle siga funcionando
+				setTimeout(() => {
+					cv.classList.remove('active-controls');
+				}, 100);
+			});
+		</script>
 
 		<script src="Redball3fl.js"></script>
 		<script>
