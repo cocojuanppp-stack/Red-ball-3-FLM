@@ -21,7 +21,7 @@
 				touch-action: none;
 			}
 
-			/* Los botones de Godot quedan arriba transparentes */
+			/* Canvas transparente de Godot al frente para tus botones táctiles */
 			#canvas {
 				display: block;
 				position: absolute;
@@ -71,7 +71,9 @@
 				document.getElementById("flash-container").appendChild(player);
 				player.load({
 					url: "redball3.swf",
-					allowScriptAccess: true
+					allowScriptAccess: true,
+					autoplay: "on",
+					unmuteOverlay: "hidden"
 				});
 			});
 		</script>
