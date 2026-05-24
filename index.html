@@ -19,18 +19,17 @@
 				touch-action: none;
 			}
 
-			/* CAPA 1: El juego Flash de fondo */
+			/* Capa de fondo: El juego de Flash original */
 			#flash-container {
 				position: absolute;
 				top: 0;
 				left: 0;
 				width: 100%;
 				height: 100%;
-				z-index: 1;
-				pointer-events: auto;
+				z-index: 1; /* Al fondo */
 			}
 
-			/* CAPA 2: El canvas de Godot ahora tiene prioridad visual (z-index: 999) */
+			/* Capa de frente: El canvas de Godot con tus controles estilo Red Ball 4 */
 			#canvas {
 				display: block;
 				position: absolute;
@@ -38,12 +37,12 @@
 				left: 0;
 				width: 100%;
 				height: 100%;
-				z-index: 999 !important; /* Lo fuerza a estar al frente de todo */
-				background: transparent !important; /* Mantiene el fondo invisible para ver el juego */
-				pointer-events: none; /* Por defecto deja pasar los dedos al juego */
+				z-index: 9999 !important; /* Fuerza a dibujarse SIEMPRE por encima de Ruffle */
+				background: transparent !important; /* Volvemos el fondo transparente para ver el juego */
+				pointer-events: none; /* Por defecto, tus dedos atraviesan el canvas y tocan Flash */
 			}
 
-			/* Cuando se activa esta clase, el canvas captura el toque del control */
+			/* Cuando tocas la zona de los controles, activamos los clics en Godot */
 			#canvas.active-controls {
 				pointer-events: auto !important;
 			}
@@ -52,20 +51,74 @@
 				outline: none;
 			}
 
-			#status {
+			/* Pantalla de carga original de Godot */
+			#status, #status-splash, #status-progress {
 				position: absolute;
-				left: 0; right: 0; top: 0; bottom: 0;
+				left: 0;
+				right: 0;
+			}
+
+			#status, #status-splash {
+				top: 0;
+				bottom: 0;
+			}
+
+			#status {
 				background-color: #242424;
 				display: flex;
 				flex-direction: column;
 				justify-content: center;
 				align-items: center;
 				visibility: hidden;
-				z-index: 1000;
-				pointer-events: none;
+				z-index: 10000; /* Por encima de todo solo durante la carga */
+			}
+
+			#status-splash {
+				max-height: 100%;
+				max-width: 100%;
+				margin: auto;
+			}
+
+			#status-splash.show-image--false {
+				display: none;
+			}
+
+			#status-splash.fullsize--true {
+				height: 100%;
+				width: 100%;
+				object-fit: contain;
+			}
+
+			#status-splash.use-filter--false {
+				image-rendering: pixelated;
+			}
+
+			#status-progress, #status-notice {
+				display: none;
+			}
+
+			#status-progress {
+				bottom: 10%;
+				width: 50%;
+				margin: 0 auto;
+			}
+
+			#status-notice {
+				background-color: #5b3943;
+				border-radius: 0.5rem;
+				border: 1px solid #9b3943;
+				color: #e0e0e0;
+				font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+				line-height: 1.3;
+				margin: 0 2rem;
+				overflow: hidden;
+				padding: 1rem;
+				text-align: center;
+				z-index: 1;
 			}
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="Redball3fl.icon.png" />
+		<link rel="apple-touch-icon" href="Redball3fl.apple-touch-icon.png"/>
 	</head>
 	<body>
 		
@@ -90,54 +143,140 @@
 			Your browser does not support the canvas tag.
 		</canvas>
 
+		<noscript>
+			Your browser does not support JavaScript.
+		</noscript>
+
 		<div id="status">
-			<img id="status-splash" src="Redball3fl.png" alt="">
+			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="Redball3fl.png" alt="">
 			<progress id="status-progress"></progress>
+			<div id="status-notice"></div>
 		</div>
 
 		<script>
 			const cv = document.getElementById('canvas');
 			
-			// Si el usuario toca el 35% inferior de la pantalla, activamos Godot
+			// Si el usuario toca el tercio inferior de la pantalla (donde están tus flechas), responde Godot
 			window.addEventListener('touchstart', (e) => {
 				const touchY = e.touches[0].clientY;
 				const screenHeight = window.innerHeight;
 				
-				if (touchY > screenHeight * 0.65) {
+				if (touchY > screenHeight * 0.60) {
 					cv.classList.add('active-controls');
 				} else {
+					// Si toca arriba (menús de pausa o walkthrough), responde Ruffle
 					cv.classList.remove('active-controls');
 				}
 			}, { passive: true });
 
 			window.addEventListener('touchend', () => {
-				// Pequeño retraso al soltar para que Godot procese el botón antes de devolver el control a Ruffle
+				// Retraso controlado para asegurar que Godot registre la liberación del botón táctil
 				setTimeout(() => {
 					cv.classList.remove('active-controls');
-				}, 80);
+				}, 100);
 			});
 		</script>
 
 		<script src="Redball3fl.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"Redball3fl","experimentalVK":false,"fileSizes":{"Redball3fl.pck":37260,"Redball3fl.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"Redball3fl","experimentalVK":false,"fileSizes":{"Redball3fl.pck":37516,"Redball3fl.wasm":35754592},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
 (function () {
 	const statusOverlay = document.getElementById('status');
 	const statusProgress = document.getElementById('status-progress');
-	setStatusMode('progress');
-	engine.startGame({
-		'onProgress': function (current, total) {
-			if (current > 0 && total > 0) {
-				statusProgress.value = current;
-				statusProgress.max = total;
-			}
-		},
-	}).then(() => {
-		statusOverlay.remove();
+	const statusNotice = document.getElementById('status-notice');
+
+	let initializing = true;
+	let statusMode = '';
+
+	function setStatusMode(mode) {
+		if (statusMode === mode || !initializing) {
+			return;
+		}
+		if (mode === 'hidden') {
+			statusOverlay.remove();
+			initializing = false;
+			return;
+		}
+		statusOverlay.style.visibility = 'visible';
+		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+		statusMode = mode;
+	}
+
+	function setStatusNotice(text) {
+		while (statusNotice.lastChild) {
+			statusNotice.removeChild(statusNotice.lastChild);
+		}
+		const lines = text.split('\n');
+		lines.forEach((line) => {
+			statusNotice.appendChild(document.createTextNode(line));
+			statusNotice.appendChild(document.createElement('br'));
+		});
+	}
+
+	function displayFailureNotice(err) {
+		console.error(err);
+		if (err instanceof Error) {
+			setStatusNotice(err.message);
+		} else if (typeof err === 'string') {
+			setStatusNotice(err);
+		} else {
+			setStatusNotice('An unknown error occurred.');
+		}
+		setStatusMode('notice');
+		initializing = false;
+	}
+
+	const missing = Engine.getMissingFeatures({
+		threads: GODOT_THREADS_ENABLED,
 	});
+
+	if (missing.length !== 0) {
+		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
+			let serviceWorkerRegistrationPromise;
+			try {
+				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
+			} catch (err) {
+				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
+			}
+			Promise.race([
+				serviceWorkerRegistrationPromise.then((registration) => {
+					if (registration != null) {
+						return Promise.reject(new Error('Service worker already exists.'));
+					}
+					return registration;
+				}).then(() => engine.installServiceWorker()),
+				new Promise((resolve) => {
+					setTimeout(() => resolve(), 2000);
+				}),
+			]).then(() => {
+				window.location.reload();
+			}).catch((err) => {
+				console.error('Error while registering service worker:', err);
+			});
+		} else {
+			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+			displayFailureNotice(missingMsg + missing.join('\n'));
+		}
+	} else {
+		setStatusMode('progress');
+		engine.startGame({
+			'onProgress': function (current, total) {
+				if (current > 0 && total > 0) {
+					statusProgress.value = current;
+					statusProgress.max = total;
+				} else {
+					statusProgress.removeAttribute('value');
+					statusProgress.removeAttribute('max');
+				}
+			},
+		}).then(() => {
+			setStatusMode('hidden');
+		}, displayFailureNotice);
+	}
 }());
 		</script>
 	</body>
