@@ -19,7 +19,7 @@
 				touch-action: none;
 			}
 
-			/* CAPA 1: El juego Flash de fondo siempre activo */
+			/* CAPA 1: El juego Flash de fondo */
 			#flash-container {
 				position: absolute;
 				top: 0;
@@ -30,7 +30,7 @@
 				pointer-events: auto;
 			}
 
-			/* CAPA 2: El canvas de Godot ahora deja pasar los clics al fondo por defecto... */
+			/* CAPA 2: El canvas de Godot ahora tiene prioridad visual (z-index: 999) */
 			#canvas {
 				display: block;
 				position: absolute;
@@ -38,12 +38,12 @@
 				left: 0;
 				width: 100%;
 				height: 100%;
-				z-index: 2;
-				background: transparent !important;
-				pointer-events: none; 
+				z-index: 999 !important; /* Lo fuerza a estar al frente de todo */
+				background: transparent !important; /* Mantiene el fondo invisible para ver el juego */
+				pointer-events: none; /* Por defecto deja pasar los dedos al juego */
 			}
 
-			/* ...¡PERO se activa OBLIGATORIAMENTE cuando tocas la zona de tus botones! */
+			/* Cuando se activa esta clase, el canvas captura el toque del control */
 			#canvas.active-controls {
 				pointer-events: auto !important;
 			}
@@ -61,7 +61,7 @@
 				justify-content: center;
 				align-items: center;
 				visibility: hidden;
-				z-index: 3;
+				z-index: 1000;
 				pointer-events: none;
 			}
 		</style>
@@ -98,25 +98,23 @@
 		<script>
 			const cv = document.getElementById('canvas');
 			
-			// Detectamos si el usuario está tocando la parte inferior de la pantalla (donde suelen ir los controles de Red Ball 4)
+			// Si el usuario toca el 35% inferior de la pantalla, activamos Godot
 			window.addEventListener('touchstart', (e) => {
 				const touchY = e.touches[0].clientY;
 				const screenHeight = window.innerHeight;
 				
-				// Si toca en el 35% inferior de la pantalla, le damos el control a Godot
 				if (touchY > screenHeight * 0.65) {
 					cv.classList.add('active-controls');
 				} else {
-					// Si toca arriba (para interactuar con menús de Flash), el control va a Ruffle
 					cv.classList.remove('active-controls');
 				}
 			}, { passive: true });
 
 			window.addEventListener('touchend', () => {
-				// Al levantar el dedo, liberamos la capa para que Ruffle siga funcionando
+				// Pequeño retraso al soltar para que Godot procese el botón antes de devolver el control a Ruffle
 				setTimeout(() => {
 					cv.classList.remove('active-controls');
-				}, 100);
+				}, 80);
 			});
 		</script>
 
